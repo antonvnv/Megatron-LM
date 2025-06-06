@@ -70,6 +70,9 @@ class AbstractModelInferenceWrapper(abc.ABC):
         )
 
         self.inference_params.reset()
+        max_batch_size = self.inference_wrapper_config.inference_max_requests
+        max_sequence_length = self.inference_wrapper_config.inference_max_seq_length
+        self.inference_params = InferenceParams(max_batch_size, max_sequence_length)
 
     @abc.abstractmethod
     def prep_inference_input(self, prompt_tokens) -> Dict[str, Any]:

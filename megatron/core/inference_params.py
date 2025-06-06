@@ -51,6 +51,7 @@ class InferenceParams:
         self.current_batch_size = self.max_batch_size
         self.sequence_len_offset = 0
         self.batch_size_offset = 0
+        self.key_value_memory_dict = {}
         self.enable_prefill_mode()
 
     def __str__(self):
