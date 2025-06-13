@@ -388,9 +388,11 @@ class TextGenerationController:
                 not self.inference_wrapped_model.inference_params.decode_mode
             ), f"Generation must start in prefill mode"
 
+            pst = self.inference_wrapped_model.inference_wrapper_config.prompt_segmentation_threshold
+            prompt_max_segment_len = min(pst, min_prompt_length_in_batch) if pst else min_prompt_length_in_batch
             context_start_position = 0
             # Pick the context window that we need to pass through the network.
-            for context_end_position in range(min_prompt_length_in_batch, max_sequence_length):
+            for context_end_position in range(prompt_max_segment_len, max_sequence_length):
 
                 inference_input_for_context_window: Dict[str, Any] = (
                     self.inference_wrapped_model.get_batch_for_context_window(
