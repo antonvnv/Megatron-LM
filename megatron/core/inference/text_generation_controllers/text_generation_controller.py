@@ -454,6 +454,11 @@ class TextGenerationController:
                         log_probs, 2, indices
                     ).squeeze(2)
 
+                if sampling_params.token_callback:
+                    from megatron.core import parallel_state
+                    if parallel_state.is_pipeline_last_stage():
+                        sampling_params.token_callback(context_end_position)
+
                 context_start_position = context_end_position
 
                 # Check end of generation status for each tensor
