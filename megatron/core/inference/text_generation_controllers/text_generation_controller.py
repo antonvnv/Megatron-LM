@@ -354,6 +354,15 @@ class TextGenerationController:
         # to nearest power of 2
         vocab_size = self.inference_wrapped_model.inference_wrapper_config.padded_vocab_size
 
+        # Pre allocate logits tensor
+        output_logits = None
+        if sampling_params.return_logits:
+            output_logits = torch.empty(
+                (batch_size, max_sequence_length - 1, vocab_size),
+                dtype=torch.float32,
+                device=torch.cuda.current_device(),
+            )
+
         # Check whether CUDA graphs are enabled
         enable_cuda_graph = get_model_config(self.inference_wrapped_model.model).enable_cuda_graph
 
@@ -454,6 +463,11 @@ class TextGenerationController:
                         log_probs, 2, indices
                     ).squeeze(2)
 
+                if sampling_params.return_logits:
+                    # Store the raw logits for the current context window
+                    assert output_logits is not None
+                    output_logits[:, context_start_position:context_end_position] = logits
+
                 if sampling_params.token_callback:
                     from megatron.core import parallel_state
                     if parallel_state.is_pipeline_last_stage():
@@ -513,6 +527,10 @@ class TextGenerationController:
             assert output_log_probs is not None
             output_log_probs = output_log_probs[:, :context_end_position]
 
+        if sampling_params.return_logits:
+            assert output_logits is not None
+            output_logits = output_logits[:, :context_end_position]
+
         generated_sequence_lengths[
             generated_sequence_lengths > sampling_params.num_tokens_to_generate
         ] = sampling_params.num_tokens_to_generate
@@ -549,6 +567,23 @@ class TextGenerationController:
                 .numpy()
                 .tolist()
             )
+
+            request.prompt_logits = (
+                None
+                if output_logits is None
+                else output_logits[idx, :input_prompt_length].cpu()
+            )
+
+            request.generated_logits = (
+                None
+                if output_logits is None
+                else output_logits[
+                    idx,
+                    input_prompt_length - 1 : (input_prompt_length + required_sequence_length - 1),
+                ]
+                .cpu()
+            )
+
             request.status = Status.COMPLETED
 
             text, segments = self.detokenize_generations(

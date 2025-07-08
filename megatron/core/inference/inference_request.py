@@ -29,6 +29,7 @@ class InferenceRequest:
     request_id: str
     prompt: str
     inference_parameters: Optional[SamplingParams] = None
+    prompt_logits: Optional[torch.Tensor] = None
     prompt_tokens: Optional[List[int]] = None
     arrival_time: Optional[float] = None
     status: Optional[Status] = None
@@ -37,6 +38,7 @@ class InferenceRequest:
     segments: Optional[List[str]] = None
     generated_segments: Optional[List[str]] = None
     generated_sequence_lengths: Optional[List[int]] = None
+    generated_logits: Optional[torch.Tensor] = None
     generated_tokens: Optional[torch.Tensor] = None
     generated_log_probs: Optional[torch.Tensor] = None
     generated_length: Optional[int] = None
