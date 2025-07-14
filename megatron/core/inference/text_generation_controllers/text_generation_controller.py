@@ -469,9 +469,7 @@ class TextGenerationController:
                     output_logits[:, context_start_position:context_end_position] = logits
 
                 if sampling_params.token_callback:
-                    from megatron.core import parallel_state
-                    if parallel_state.is_pipeline_last_stage():
-                        sampling_params.token_callback(context_end_position)
+                    sampling_params.token_callback(context_end_position)
 
                 context_start_position = context_end_position
 
