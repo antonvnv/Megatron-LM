@@ -108,8 +108,9 @@ class AbstractModelInferenceWrapper(abc.ABC):
         tokens = inference_input["tokens"]
         position_ids = inference_input["position_ids"]
         attention_mask = inference_input["attention_mask"]
+        inference_params = inference_input.get("inference_params", self.inference_params)
         return self.model(
-            tokens, position_ids, attention_mask, inference_params=self.inference_params
+            tokens, position_ids, attention_mask, inference_params=inference_params
         )
 
     def _get_batch_size_and_seq_len(
