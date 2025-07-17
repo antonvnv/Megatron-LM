@@ -152,6 +152,7 @@ class AbstractModelInferenceWrapper(abc.ABC):
         tokens = inference_input["tokens"]
         position_ids = inference_input["position_ids"]
         attention_mask = inference_input["attention_mask"]
+        inference_context = inference_input.get("inference_context", self.inference_context)
         runtime_gather_output = inference_input.get("runtime_gather_output")
         return self.model(
             tokens,
